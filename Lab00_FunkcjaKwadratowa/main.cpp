@@ -57,8 +57,8 @@ int main()
 	cout << "Delta = " << policzonaDelta << endl;
 	if (policzonaDelta < 0)
 	{					
-		cout << "Zespolony x1 = " << delta.policzX1(abs(policzonaDelta)) << endl;
-		cout << "Zespolony x2 = " << delta.policzX2(abs(policzonaDelta)) << endl;
+		cout << "Zespolony x1 = " << delta.policzX1(abs(policzonaDelta)) << " + " << sqrt(abs(policzonaDelta)) / (2 * tabLiczby[0]) << "i" << endl;
+		cout << "Zespolony x2 = " << delta.policzX2(abs(policzonaDelta)) << " - " << sqrt(abs(policzonaDelta)) / (2 * tabLiczby[0]) << "i" << endl;
 	}
 	else if (policzonaDelta == 0) {
 		cout << "x0 = " << delta.policzX0() << endl;
