@@ -12,6 +12,7 @@ void czekaj(int milis) {
 }
 
 int main() {
+
 	int czasOperacji;
 	int nrWatku = 0;
 
@@ -22,7 +23,8 @@ int main() {
 	float tabD[200][200];
 
 	float tabAB[200][200];
-	float tabCD[200][200];
+	float tabCmultiplyD[200][200];
+	float tabCplusD[200][200];
 
 	srand(time(NULL));
 
@@ -48,11 +50,9 @@ int main() {
 			}
 		}
 #pragma omp barrier
-
 #pragma omp master
 		{
 			cout << "Czas etapu 1 (uzupelnienie tablicy A i B): " << clock() - czasOperacji << endl;
-
 			czasOperacji = clock();
 		}
 
@@ -79,48 +79,47 @@ int main() {
 #pragma omp single
 				{
 					if (tabA[i][j] > maxA)
-					{
 						maxA = tabA[i][j];
-					}
 				}
 #pragma omp single
 				{
 					if (tabB[i][j] < minB)
-					{
 						minB = tabB[i][j];
-					}
 				}
 			}
 		}
-
-#pragma omp barrier	
-
+#pragma omp barrier
 #pragma omp master
 		{
 			cout << "Czas etapu 2 (wyliczenie tablic C i D, dodanie tablic A i B," << endl << "znalezienie min z tablicy A i znalezienie max z tablicy B): " << clock() - czasOperacji << endl;
-
 			czasOperacji = clock();
 		}
 
-		
-#pragma omp single
+		for (int i = 0; i < 200; i++)
 		{
-			for (int i = 0; i < 200; i++)
+			czekaj(1);
+			for (int j = 0; j < 200; j++)
 			{
-				czekaj(1);
-				for (int j = 0; j < 200; j++)
+#pragma omp single
 				{
-					tabCD[i][j] = tabC[i][j] * tabD[i][j];
+					tabCmultiplyD[i][j] = tabC[i][j] * tabD[i][j];
+				}
+#pragma omp single
+				{
+					tabCplusD[i][j] = tabC[i][j] + tabD[i][j];
 				}
 			}
 		}
+		czekaj(200);
 #pragma omp single
-			{
-				czekaj(200);
-				cout << "maxA: " << maxA << endl;
-				cout << "minB: " << minB << endl;
-			}
+		{
+			cout << "maxA: " << maxA << endl;
 		}
+#pragma omp single
+		{
+			cout << "minB: " << minB << endl;
+		}
+#pragma omp barrier
 #pragma omp master
 		{
 			cout << "Czas trwania operacji 3 (pomnozenie tablic C i D, wypisanie min i max): " << clock() - czasOperacji << endl;
@@ -128,5 +127,5 @@ int main() {
 		}
 	}
 	_getch();
-	return 0;
+	return 0;	
 }
