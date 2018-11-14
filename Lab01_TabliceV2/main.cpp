@@ -2,6 +2,7 @@
 #include <iostream>
 #include <omp.h>
 #include <ctime>
+#include <string>
 
 using namespace std;
 
@@ -23,7 +24,9 @@ int main() {
 
 	float tabAB[200][200];
 	float tabCmultiplyD[200][200];
-	float tabCplusD[200][200];
+
+	float tabCsumming = 0;
+	float tabDsumming = 0;
 
 	srand(time(NULL));
 
@@ -31,14 +34,14 @@ int main() {
 
 #pragma omp parallel num_threads(2)
 	{
-		int thread_num = omp_get_thread_num();
+		nrWatku = omp_get_thread_num();
 
 		for (int i = 0; i < 200; i++)
 		{
 			czekaj(1);
 			for (int j = 0; j < 200; j++)
 			{
-				if (thread_num == 0) 
+				if (nrWatku == 0)
 				{
 					do {
 						tabA[i][j] = rand() % 20001 - 10000;
@@ -60,26 +63,26 @@ int main() {
 
 #pragma omp parallel num_threads(5)
 	{
-		int thread_num = omp_get_thread_num();
+		nrWatku = omp_get_thread_num();
 
 		for (int i = 0; i < 200; i++)
 		{
 			czekaj(1);
 			for (int j = 0; j < 200; j++)
 			{
-				if (thread_num == 0)
+				if (nrWatku == 0)
 				{
 					tabC[i][j] = 1 / tabA[i][j];
 				}
-				else if(thread_num == 1)
+				else if(nrWatku == 1)
 				{
 					tabD[i][j] = sqrt(tabB[i][j]);
 				}
-				else if (thread_num == 2)
+				else if (nrWatku == 2)
 				{
 					tabAB[i][j] = tabA[i][j] + tabB[i][j];
 				}
-				else if (thread_num == 3)
+				else if (nrWatku == 3)
 				{
 					if (tabA[i][j] > maxA)
 						maxA = tabA[i][j];
@@ -98,22 +101,25 @@ int main() {
 
 #pragma omp parallel num_threads(2)
 	{
-		int thread_num = omp_get_thread_num();
+		nrWatku = omp_get_thread_num();
 
-		if (thread_num == 0 || thread_num == 1)
+		if (nrWatku == 0 || nrWatku == 1)
 		{
 			for (int i = 0; i < 200; i++)
 			{
 				czekaj(1);
 				for (int j = 0; j < 200; j++)
 				{
-					if (thread_num == 0)
+					if (nrWatku == 0)
 					{
 						tabCmultiplyD[i][j] = tabC[i][j] * tabD[i][j];
 					}
-					else
+					else if(nrWatku == 1)
 					{
-						tabCplusD[i][j] = tabC[i][j] + tabD[i][j];
+						tabCsumming = tabCsumming + tabC[i][j];
+					}
+					else {
+						tabDsumming = tabDsumming + tabD[i][j];
 					}
 				}
 			}
@@ -123,10 +129,12 @@ int main() {
 			czekaj(200);
 			cout << "maxA: " << maxA << endl;
 			cout << "minB: " << minB << endl;
+			cout << "zsumowaneC: " << tabCsumming << endl;
+			cout << "zsumowaneD: " << tabDsumming << endl;
 		}
 	}
 
-	cout << "Czas trwania operacji 3 (pomnozenie tablic C i D, wypisanie min i max): " << clock() - czasOperacji << endl;
+	cout << "Czas trwania operacji 3 (zsumowanie i pomnozenie tablic C i D, wypisanie min i max): " << clock() - czasOperacji << endl;
 	cout << "Nacisnij klawisz ...";
 	
 	_getch();

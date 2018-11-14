@@ -2,6 +2,7 @@
 #include <iostream>
 #include <omp.h>
 #include <ctime>
+#include <string>
 
 using namespace std;
 
@@ -12,7 +13,6 @@ void czekaj(int milis) {
 }
 
 int main() {
-
 	int czasOperacji;
 	int nrWatku = 0;
 
@@ -23,14 +23,16 @@ int main() {
 	float tabD[200][200];
 
 	float tabAB[200][200];
-	float tabCmultiplyD[200][200];
-	float tabCplusD[200][200];
+	float tabCD[200][200];
+
+	float tabCsumming = 0;
+	float tabDsumming = 0;
 
 	srand(time(NULL));
 
 	czasOperacji = clock();
 
-#pragma omp parallel num_threads(5)
+#pragma omp parallel num_threads(8)
 	{
 		for (int i = 0; i < 200; i++)
 		{
@@ -55,7 +57,7 @@ int main() {
 			cout << "Czas etapu 1 (uzupelnienie tablicy A i B): " << clock() - czasOperacji << endl;
 			czasOperacji = clock();
 		}
-
+	
 		float maxA = tabA[0][0];
 		float minB = tabB[0][0];
 
@@ -102,15 +104,18 @@ int main() {
 			{
 #pragma omp single
 				{
-					tabCmultiplyD[i][j] = tabC[i][j] * tabD[i][j];
+					tabCD[i][j] = tabC[i][j] * tabD[i][j];
 				}
 #pragma omp single
 				{
-					tabCplusD[i][j] = tabC[i][j] + tabD[i][j];
+					tabCsumming = tabCsumming + tabC[i][j];
+				}
+#pragma omp single
+				{
+					tabDsumming = tabDsumming + tabD[i][j];
 				}
 			}
 		}
-		czekaj(200);
 #pragma omp single
 		{
 			cout << "maxA: " << maxA << endl;
@@ -119,10 +124,18 @@ int main() {
 		{
 			cout << "minB: " << minB << endl;
 		}
+#pragma omp single
+		{
+			cout << "zsumowaneC: " << tabCsumming << endl;
+		}
+#pragma omp single
+		{
+			cout << "zsumowaneD: " << tabDsumming << endl;
+		}		
 #pragma omp barrier
 #pragma omp master
 		{
-			cout << "Czas trwania operacji 3 (pomnozenie tablic C i D, wypisanie min i max): " << clock() - czasOperacji << endl;
+			cout << "Czas trwania operacji 3 (zsumowanie elementow i pomnozenie tablic C i D, wypisanie min i max): " << clock() - czasOperacji << endl;
 			cout << "Nacisnij klawisz ...";
 		}
 	}
